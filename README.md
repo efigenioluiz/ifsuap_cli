@@ -10,7 +10,7 @@ IfSuap is a command-line utility that allows users to interact with the SUAP pla
 
 - **Login Automation**: Automatically logs into the SUAP system using environment variables for your username and password.
 - **Fetch Disciplines**: Retrieves a list of disciplines available in the SUAP system, including their IDs and names.
-- **Fetch Students**: Fetches a list of students enrolled in a given discipline, showing their names and SUAP IDs. (NOT WORK YET)
+- **Fetch Students**: Fetches a list of students enrolled in a given discipline, showing their names and SUAP IDs.
 
 ## 📦 Installation
 

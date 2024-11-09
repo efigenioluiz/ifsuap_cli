@@ -42,59 +42,49 @@ module IfSuap
     end
 
     desc "fetch_students [DISCIPLINE_ID ou DISCIPLINE_NAME]", "Fetches student data from SUAP based on the discipline ID or name"
-    def fetch_students(discipline_params = nil)
+    def fetch_students(discipline_id = nil, step = 1)
 
-      if disciplina_id.nil?
+      if discipline_id.nil?
         response_body(status: "Error", message: "Error: ID must be informed", data: [])
         return
       end
 
       login_suap
-      @driver.navigate.to 'https://suap.ifpr.edu.br/edu/meus_diarios/'
+      @driver.navigate.to "https://suap.ifpr.edu.br/edu/meu_diario/#{discipline_id}/#{step}/?tab=notas"
 
-      disciplines = @driver.find_elements(:css, 'div.general-box')
-      disciplines_data = disciplines.map do |discipline|
-        name_discipline = discipline.find_element(:css, 'h5.title a').text
-        id_discipline = discipline.find_element(:css, 'h5.title a')['href'].split('/')[4]
+      wait = Selenium::WebDriver::Wait.new(timeout: 10)
+      wait.until { @driver.find_element(:css, 'table#table_notas tbody') }
 
-        {
-          nome: name_discipline,
-          id: id_discipline
-        }
-      end
+      students_rows = @driver.find_elements(:css, 'table#table_notas tbody tr')
+      students_data = students_rows.map do |row|
+        begin
+          student_name = row.find_element(:xpath, './/td/dl/dd')&.text.strip
+          student_id = row.find_element(:xpath, './/td/dl/dd/a')&.text.strip
 
-      selected_discipline = if discipline_params
-        disciplines_data.find { |disc| disc[:id] == discipline_params || disc[:name].include?(discipline_params) }
-      else
-        nil
-      end
-
-      if disciplina_selecionada.nil?
-        puts JSON.pretty_generate(disciplines_data)
-      else
-        @driver.navigate.to "https://suap.ifpr.edu.br/edu/meu_diario/#{disciplina_selecionada[:id]}/0/"
-
-        students = @driver.find_elements(:css, 'td[style*="height: 55px"]')
-        students_data = students.map do |aluno|
-          {
-            name: aluno.find_element(:css, 'a').text,
-            id_suap: aluno.find_element(:css, 'div.hide-sm a').text
-          }
+          if student_name && student_id
+            { name: student_name.split("(")[0].strip, id: student_id }
+          else
+            puts "Erro: Dados incompletos para a linha #{row.text}"
+            nil
+          end
+        rescue Selenium::WebDriver::Error::NoSuchElementError => e
+          nil
         end
+      end.compact
 
-        response_body(status: "Success", message: "Discipline found", data:{
-          discipline: selected_discipline,
-          students: students_data
-        })
-      end
+
+      response_body(status: "Success", message: "Discipline found of the step: #{step}", data:{
+        discipline_id: discipline_id,
+        students: students_data
+      })
 
       @driver.quit
     end
 
     desc "fetch_disciplines", "Fetches all disciplines (name and ID)"
     def fetch_disciplines
-      spinner = TTY::Spinner.new("[:spinner] Loading...", format: :dots)
-      spinner.auto_spin
+      # spinner = TTY::Spinner.new("[:spinner] Loading...", format: :dots)
+      # spinner.auto_spin
       login_suap
 
       @driver.navigate.to 'https://suap.ifpr.edu.br/edu/meus_diarios/'
@@ -119,7 +109,7 @@ module IfSuap
       end
       response_body(status: "Success", message: "Disciplines fetched", data: disciplines_data)
 
-      spinner.success("Done!")
+      # spinner.success("Done!")
       @driver.quit
     end
   end
