@@ -1,3 +1,4 @@
+require 'spec_helper'
 require_relative '../lib/ifsuap'
 
 RSpec.describe IfSuap::Command do
