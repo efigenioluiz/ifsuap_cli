@@ -3,6 +3,7 @@ require 'selenium-webdriver'
 require 'thor'
 require 'json'
 require 'tty-spinner'
+require 'date'
 
 module IfSuap
   class Command < Thor
@@ -112,5 +113,24 @@ module IfSuap
       # spinner.success("Done!")
       @driver.quit
     end
+    desc "create_class [DATE, DISCIPLINE_ID ,CONTENT_CLASS, QT_CLASSES]", "Create a class on discipline with the given information"
+    method_option :date, aliases: "-d" ,type: :string, default: Date.today.to_s, desc: "Date of the class"
+    method_option :discipline_id,aliases: "-id", type: :string, required: true, desc: "ID of the discipline"
+    method_option :content_class, aliases: "-c" ,type: :string, default: '', desc: "Content of the class"
+    method_option :qt_classes, aliases: "-qt",type: :numeric, default: 1, desc: "Number of classes"
+    def create_class
+      date = Date.parse(options[:date])
+      discipline_id = options[:discipline_id]
+      content_class = options[:content_class]
+      qt_classes = options[:qt_classes]
+
+      if discipline_id.nil? || discipline_id.empty?
+        response_body(status: "Error", message: "Error: DISCIPLINE ID must be informed", data: [])
+        return
+      end
+
+      puts "#{date} - #{content_class} - #{qt_classes}"
+    end
+
   end
 end
