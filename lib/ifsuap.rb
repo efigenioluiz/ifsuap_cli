@@ -9,7 +9,19 @@ module IfSuap
   class Command < Thor
     def initialize(*args)
       super
-      @driver = Selenium::WebDriver.for :chrome
+      options = Selenium::WebDriver::Chrome::Options.new
+      options.add_argument('--headless')
+      options.add_argument('--no-sandbox')
+      options.add_argument('--disable-dev-shm-usage')
+      options.add_argument('--window-size=1280,800')
+      options.add_argument('--disable-gpu')
+      options.add_argument('--disable-blink-features=AutomationControlled')
+      options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
+
+      @driver = Selenium::WebDriver.for :chrome, options: options
+      wait = Selenium::WebDriver::Wait.new(timeout: 5)
+
+      wait.until { @driver.execute_script("return document.readyState") == "complete" }
     end
 
     no_commands do
@@ -131,6 +143,5 @@ module IfSuap
 
       puts "#{date} - #{content_class} - #{qt_classes}"
     end
-
   end
 end
