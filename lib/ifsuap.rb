@@ -227,5 +227,53 @@ module IfSuap
         end
         response_body(status: "Error", message: "Teaching plan not found", data: [])
     end
+
+    desc "set_cf_for_step [STEP]", "Set the CF for the step"
+    def set_cf_for_step(file_path = nil, discipline_id = nil,step=1)
+      step = step.to_i
+
+      if discipline_id.nil? or file_path.nil?
+        response_body(status: "Error", message: "Error: discipline id  or file path must be informed", data: [])
+        return
+      end
+
+      students = JSON.parse(File.read(file_path))
+      login_suap
+
+      @driver.navigate.to "https://suap.ifpr.edu.br/edu/meu_diario/#{discipline_id}/#{step}/?tab=notas"
+
+      wait = Selenium::WebDriver::Wait.new(timeout: 10)
+      wait.until { @driver.find_element(css: 'table#table_notas tbody') }
+
+      data = []
+      students.each do |student|
+        id_student = student['id']
+        name_student = student['name']
+        cf_concept = student['cf']
+
+        begin
+          student_row = @driver.find_element(:xpath, "//a[contains(@href, '#{id_student}')]/ancestor::tr")
+
+          cf_field = student_row.find_element(:xpath, ".//input[contains(@onblur, ', #{step})')]")
+
+
+          cf_field.clear
+          cf_field.send_keys(cf_concept)
+          cf_field.send_keys(:tab)
+
+          data << "CF for student ID #{id_student} successfully updated."
+
+        rescue Selenium::WebDriver::Error::NoSuchElementError => e
+          if e.message.include?("ancestor::tr")
+            data << "Student with ID #{name} not found in the table."
+          else
+            data << "Student with ID #{name_student} has no CF input field (possibly inactive or unavailable)."
+          end
+        end
+
+      end
+      response_body(status: "Success", message: "CF updated", data: data)
+    end
+
   end
 end

@@ -12,6 +12,7 @@ IfSuap is a command-line utility that allows users to interact with the SUAP pla
 - **Fetch Disciplines**: Retrieves a list of disciplines available in the SUAP system, including their IDs and names.
 - **Fetch Students**: Fetches a list of students enrolled in a given discipline, showing their names and SUAP IDs.
 - **Teaching Plan**: Fetches the teaching plan for a given discipline, including the **discipline ID** and making download of the PDF.and get a content of the PDF via CLI.
+- **Set Final Concept to Stundent**: Automatically set final concept to student by discipline ID based on JSON file by step.
 
 
 ## 📦 Installation
@@ -233,6 +234,79 @@ If the teaching plan cannot be found, the command will output an error message l
 }
 ```
 
+### `set_cf_for_step`
+
+This command updates the CF (Final Grade) for each student in a specified discipline and step on the SUAP portal, using data from a provided JSON file.
+
+#### Usage:
+
+```bash
+$ ./bin/ifsuap set_cf_for_step --file_path [FILE_PATH] --discipline_id [DISCIPLINE_ID] --step [STEP]
+```
+
+#### Parameters:
+- **`file_path`**: Path to the JSON file containing student data (ID, name, and CF grade).
+- **`discipline_id`**: The ID of the discipline to update CF grades.
+- **`step`**: The step (period) in which the CF grade should be updated (e.g., 1, 2, or 3).
+
+#### Description:
+
+1. **Login to SUAP**: Logs in to the SUAP portal using credentials stored in environment variables.
+2. **Navigation**: Opens the grading page for the specified discipline and step.
+3. **Grade Update**:
+   - Reads the JSON file containing student IDs, names, and CF grades.
+   - Finds each student's row on the SUAP grade table.
+   - Inputs the CF grade for each student.
+4. **Skipping Inactive Students**: If a student’s row or CF input field is missing (e.g., due to inactivity), it logs a message and continues with the next student.
+
+#### Example JSON File (`students.json`):
+
+```json
+[
+  {
+    "id": "2000000000",
+    "name": "JOÃO ",
+    "cf": "B"
+  },
+  {
+    "id": "1000000000",
+    "name": "LORENA ",
+    "cf": "C"
+  }
+]
+```
+
+#### Example Output:
+
+On successful execution, the command will return a JSON response:
+
+```json
+{
+  "status": "Success",
+  "message": "CF updated",
+  "data": [
+    "CF for student ID 931283128 successfully updated.",
+    "Student with ID LORENA  has no CF input field (possibly inactive or unavailable)."
+  ]
+}
+```
+
+#### Error Handling:
+
+If an error occurs or a required parameter is missing, the command outputs an error message:
+
+```json
+{
+  "status": "Error",
+  "message": "Error: discipline id or file path must be informed",
+  "data": []
+}
+```
+
+#### Notes:
+- Ensure the JSON file format aligns with the example shown.
+- Make sure the `step` parameter corresponds to the correct grading period, as CF inputs differ per step.
+- This command requires an active SUAP session with the appropriate permissions to access and modify grades.
 ## 💬 Development
 
 If you want to contribute to this project, make sure to:
