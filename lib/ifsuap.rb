@@ -261,7 +261,7 @@ module IfSuap
           cf_field.send_keys(cf_concept)
           cf_field.send_keys(:tab)
 
-          data << "CF for student ID #{id_student} successfully updated."
+          data << "CF for student ID #{name_student} successfully updated."
 
         rescue Selenium::WebDriver::Error::NoSuchElementError => e
           if e.message.include?("ancestor::tr")
