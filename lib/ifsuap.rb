@@ -261,13 +261,13 @@ module IfSuap
           cf_field.send_keys(cf_concept)
           cf_field.send_keys(:tab)
 
-          data << "CF for student ID #{id_student} successfully updated."
+          data << "CF for student ID #{name_student} successfully updated."
 
         rescue Selenium::WebDriver::Error::NoSuchElementError => e
           if e.message.include?("ancestor::tr")
-            data << "Student with ID #{name} not found in the table."
+            data << "Student with #{name_student} not found in the table."
           else
-            data << "Student with ID #{name_student} has no CF input field (possibly inactive or unavailable)."
+            data << "Student with #{name_student} has no CF input field (possibly inactive or unavailable)."
           end
         end
 
